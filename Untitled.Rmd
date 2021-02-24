@@ -1,0 +1,89 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+Swift Lyrics 
+
+```{r}
+library(tidyverse) 
+library(genius) 
+library(tidytext) 
+library(ggtextures) 
+library(extrafont) 
+library(scales) #percentage scales in ggplot
+library(widyr) #correlations between songs
+library(ggraph) #plotting network maps
+library(igraph) #same
+```
+
+Hello.  
+
+
+#1. Downloading the lyrics with the Genius package
+```{r}
+#First, downloading each TS album
+ts1 <- genius_album(artist = "Taylor Swift", album = "Taylor Swift") %>%
+  mutate(album = "Taylor Swift")
+
+ts2 <- genius_album(artist = "Taylor Swift", album = "Fearless") %>%
+  mutate(album = "Fearless")%>%
+  filter(!track_n %in% 14:16) #remove bonus tracks
+
+ts3 <- genius_album(artist = "Taylor Swift", album = "Speak Now") %>%
+  mutate(album = "Speak Now")
+
+ts4 <- genius_album(artist = "Taylor Swift", album = "Red") %>%
+  mutate(album = "Red")
+
+ts5 <- genius_album(artist = "Taylor Swift", album =  "1989") %>%
+  mutate(album = "1989")
+
+ts6 <- genius_album(artist = "Taylor Swift", album = "Reputation") %>%
+  mutate(album = "Reputation")
+
+ts7 <- genius_album(artist = "Taylor Swift", album = "Lover") %>%
+  mutate(album = "Reputation")
+
+ts8 <- genius_album(artist = "Taylor Swift", album = "Folklore") %>%
+  mutate(album = "Reputation")
+
+ts9 <- genius_album(artist = "Taylor Swift", album = "Evermore") %>%
+  mutate(album = "Reputation")
+
+#Putting all togetherin the same df
+tay <- rbind(ts1, ts2, ts3, ts4, ts5, ts6, ts7, ts8, ts9)
+
+#Patterns to be removed from the data
+remove.list <- paste(c("Demo Recording", "Voice Memo", "Pop Version", "Acoustic Version"), collapse = '|')
+
+#Applying the changes
+tay <- tay%>%
+ filter(!grepl(remove.list, track_title)) 
+
+#Just in case: save!
+save(tay, file = "taytay.Rdata")
+```
+
+2. Tidying up the lyrics
+```{r}
+#Want to make the tibble one word per row, so we will tokenise it with tidytext
+#unnest_token also removes punctuation and puts everything in lowercase
+
+tay_tok <- tay %>%
+  unnest_tokens(word, lyric) #word is the new column, lyric the column to retrieve the information from
+
+tay_tok %>%
+  count(word, sort = TRUE) 
+
+#Remove stop words
+
+tidy_taylor <- tay_tok %>%
+  anti_join(stop_words)
+
+tidy_taylor %>%
+  count(word, sort = TRUE)
+```
+
+
+#3. Producing bar plots with an image as fill in ggplot: glitter time!
