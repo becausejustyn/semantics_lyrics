@@ -1,0 +1,83 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+library(geniusr)
+library(tidyverse)
+library(knitr)
+library(purrr)
+```
+
+
+
+```{r}
+genius_token()
+
+taylor_id <- 1177
+
+taylor_songs <- geniusr::get_artist_songs(taylor_id) 
+
+dplyr::sample_n(taylor_songs, 10) %>%
+  dplyr::select(song_name) %>%
+  knitr::kable()
+```
+
+```{r}
+search_song("all too well")
+get_song_meta(102701) #597875 is the album id
+
+red_tracks <- scrape_tracklist(597875) #deprecated
+red_tracks1 <- get_album_tracklist_id(597875)
+
+red1_lyrics <- map_df(red_tracks1$song_lyrics_url, scrape_lyrics_url) #deprecated
+red_lyrics <- map_df(red_tracks1$song_lyrics_url, get_lyrics_url)
+
+state_of_grace <- get_lyrics_url(red_tracks$song_lyrics_url[1])
+```
+
+
+```{r}
+search_artist("taylor swift")
+```
+
+
+
+```{r}
+
+
+#function over each song id
+
+songs_meta <- purrr::map_df(
+  taylor_songs$song_id, 
+  geniusr::get_song_meta
+)
+```
+
+
+Find a list of her albums
+
+##
+
+library(genius)
+
+```{r}
+tay_albums <- tibble(
+  artist = "Taylor Swift", 
+  album = c("Red", "1989")) 
+
+album_lyrics <- tay_albums %>% 
+  mutate(tracks = purrr::map2(artist, album, genius_album))
+```
+
+```{r}
+taylor_albums <- c("Taylor Swift", "Fearless", "Speak Now", "Red", "1989", "Reputation", "Lover", "Folklore", "Evermore")
+
+tay2_albums <- tibble(
+  artist = "Taylor Swift", 
+  album = taylor_albums)
+  
+album_lyrics2 <- tay2_albums %>% 
+  mutate(tracks = purrr::map2(artist, album, genius_album))
+```
+
